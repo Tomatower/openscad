@@ -146,6 +146,19 @@ BinaryOp::BinaryOp(Expression *left, BinaryOp::Op op, Expression *right, const L
 
 ValuePtr BinaryOp::evaluate(const std::shared_ptr<Context>& context) const
 {
+	ValuePtr vleft = this->left->evaluate(context);
+	ValuePtr vright = this->right->evaluate(context);
+
+	// TODO Dont warn on compare with the literal undefined
+	if (vleft == ValuePtr::undefined && !this->left->isLiteral()) {
+		std::string locs = loc.toRelativeString(context->documentPath());
+		PRINTB("WARNING: %s calculating a binery operation with left-hand-side undefined", locs);
+	}
+	if (vright == ValuePtr::undefined && !this->right->isLiteral()) {
+		std::string locs = loc.toRelativeString(context->documentPath());
+		PRINTB("WARNING: %s calculating a binery operation with right-hand-side undefined", locs);
+	}
+
 	switch (this->op) {
 	case Op::LogicalAnd:
 		return this->left->evaluate(context) && this->right->evaluate(context);
